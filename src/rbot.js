@@ -5,67 +5,57 @@ var tesseract = require('node-tesseract');
 
 var count = 0;
 var p = path.join(__dirname, '/../cm.png')
-
 var isChopping = false;
 var stopChoppingTimoutSet = false;
-// var fs = require('fs')
-// const readline = require('readline');
-// var onExit = require('signal-exit')
+const PWORD = "James123"
 
-// Logout on script stop
-// process.stdin.setRawMode(false);
-// process.stdin.resume();
-// process.on('exit', () => {
-//         console.log("lol")
-//         process.exit(0)
-//     })
-// process.on('SIGINT', () => {
-//     console.log("Terminating...");
-//     process.exit(0);
-// });
-
-// if (process.platform === "win32") {
-//     var rl = readline.createInterface({
-//         input: process.stdin,
-//         output: process.stdout
-//     });
-
-//     rl.on('SIGINT', function() {
-//         console.log("plas")
-//         process.emit("SIGINT");
-//     });
-// }
-
+// Clean escape on ctrl+c
 process.on('SIGINT', function() {
-    logout();
+    if (logoutOnEnd) {
+        logout();
+    }
     process.exit()
 })
 
-// process.on('exit', function() {
-// })
-
-
-// process.on("SIGINT", function() {
-//     //graceful shutdown
-//     process.exit();
-// });
-
-// onExit(function(code, signal) {
-//     console.log('process exited!')
-// })
 const TREE_COLORS = ['684925']
 
 const MODES = ['FARM_TREES', 'COLOR_PICKER', 'FIND_TREE']
 var mode = 0;
 var isLoggedIn = false;
 var logoutOnEnd = true;
-console.log(mode)
 
-//setup and login
+
 var screenSize = r.getScreenSize()
 
 
 async function main() {
+
+    console.log(process.argv.length > 2)
+    if (process.argv.length > 2) {
+        BotController(process.argv.slice(2, process.argv.length - 1))
+    } else {
+        console.log(mode)
+        bot()
+    }
+}
+
+
+async function BotController(commands) {
+    for (var i = 0; i < commands.length; i++) {
+        switch (commands[i].toLowerCase()) {
+            case "login":
+                console.log('LOGIN')
+            case "logout":
+                console.log('LOGOUT')
+            default:
+                console.log('INVALID PROGRAM ARGUMENTS: ', commands[i])
+        }
+    }
+}
+
+
+
+async function bot() {
     if (!isLoggedIn) {
         await login()
     }
@@ -89,7 +79,7 @@ async function main() {
     }
 }
 
-main()
+
 
 
 
@@ -252,11 +242,13 @@ function screenCap() {
     return r.screen.capture(0, 0, screenSize.width, screenSize.height)
 }
 
-function contextMenuCap() {
-    return r.screen.capture(0, 20, 120, 50)
+function contextMenuCap(textLength) {
+    var length = (typeof textLength === 'undefined') ? 120 : textLength * 9; //i did the sums, the math checks out
+    var length = textLength * 9 || 120
+    return r.screen.capture(0, 20, length, 35)
         // return r.screen.capture(0, 0, 150, 150)
-
 }
+
 
 // function bitmap2Image(bitmap) {
 //     return "data:image/png;base64," + bitmap.image.toString('base64')
@@ -307,7 +299,7 @@ async function login() {
         r.moveMouse(1030, 320);
         r.mouseClick(); //click "existing user"
         setTimeout(() => {
-            r.typeString("James123"); //password
+            r.typeString(PWORD); //password
 
             setTimeout(() => {
                 r.moveMouse(880, 350)
@@ -331,3 +323,8 @@ async function awaitChopTree() {
         }, 15000)
     })
 }
+
+
+
+
+main().catch(e => { console.log(e) })
